@@ -1,0 +1,16 @@
+file dilFridge.template
+{
+pattern {S, TA, DN, SPSensor}
+        {SECAGE, SE, Dilfridge, 5}
+}
+
+
+file alarmEna.template
+
+{
+pattern {P, IA, AE, GT, IAA, AEA}
+        {SE:SE:Dilfridge, SE:SE:Dilfridge:ALARM_SUMMARY,SE:SE:Dilfridge:DISABLE_ALARM, 1, 0, 0}
+}
+
+
+

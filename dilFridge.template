@@ -1,0 +1,586 @@
+#Returns the status of the dilution refrigerator system
+#This is an enumeration on the protocl file.
+#here we handle the alarms also
+# out "READ:SYS:DR:STATUS"; in "STAT:SYS:DR:STATUS:%{_HIFPP|OK|_HICPP|_HICDP|_NAIR}"
+# HIFPP if the pressure of the forepump is hihg
+# OK no issue registered
+# HICPP compressor pressure high
+# HICDP condensing line pressure high
+# NAIR air supply to GHS has failed
+#
+record(mbbi, "$(S):$(TA):$(DN):ReadStatus") {
+  field(DESC, "Read dilfridge Status")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadStatus Dilfridge1 MS")
+  field(PINI, "YES")
+  field(SCAN, "1 second")
+  info(archive, "monitor,00:00:01")
+}
+
+record(calc, "$(S):$(TA):$(DN):ForePumpStatus")
+{
+    field(INPA, "$(S):$(TA):$(DN):ReadStatus CPP MS")
+    field(CALC, "(A=0?0:1)")
+    field(HIHI, "1")
+    field(LOLO, "0")
+    field(HHSV, "NO_ALARM")
+    field(LLSV, "MAJOR")
+    info(archive, "monitor,00:00:01")
+}
+
+record(calc, "$(S):$(TA):$(DN):AllStatus")
+{
+    field(INPA, "$(S):$(TA):$(DN):ReadStatus CPP MS")
+    field(CALC, "(A=1?1:0)")
+    field(HIHI, "1")
+    field(LOLO, "0")
+    field(HHSV, "NO_ALARM")
+    field(LLSV, "MAJOR")
+    info(archive, "monitor,00:00:01")
+}
+
+record(calc, "$(S):$(TA):$(DN):CompressorPressure")
+{
+    field(INPA, "$(S):$(TA):$(DN):ReadStatus CPP MS")
+    field(CALC, "(A=2?0:1)")
+    field(HIHI, "1")
+    field(LOLO, "0")
+    field(HHSV, "NO_ALARM")
+    field(LLSV, "MAJOR")
+    info(archive, "monitor,00:00:01")
+}
+
+
+record(calc, "$(S):$(TA):$(DN):CondensingLinePressure")
+{
+    field(INPA, "$(S):$(TA):$(DN):ReadStatus CPP MS")
+    field(CALC, "(A=3?0:1)")
+    field(HIHI, "1")
+    field(LOLO, "0")
+    field(HHSV, "NO_ALARM")
+    field(LLSV, "MAJOR")
+    info(archive, "monitor,00:00:01")
+}
+
+record(calc, "$(S):$(TA):$(DN):AirToGHS")
+{
+    field(INPA, "$(S):$(TA):$(DN):ReadStatus CPP MS")
+    field(CALC, "(A=4?0:1)")
+    field(HIHI, "1")
+    field(LOLO, "0")
+    field(HHSV, "NO_ALARM")
+    field(LLSV, "MAJOR")
+    info(archive, "monitor,00:00:01")
+
+}
+
+
+################################################################
+# Records dealing with alarm handling
+
+##
+## Disable top level alarm handling
+##
+record(bo, "$(S):$(TA):$(DN):DISABLE_ALARM") {
+  field(DESC, "Disable Alarms")
+  field(PINI, "YES")
+  field(VAL, "0")
+  field(OMSL, "supervisory")
+  field(ZNAM, "Alarm Enabled")
+  field(ONAM, "Alarm Disabled")
+  field(ZSV, "NO_ALARM")
+  field(OSV, "MINOR")
+  field(FLNK, "$(S):$(TA):$(DN):ALARM_SUMMARY_CALC")
+  info(autosaveFields, "VAL")
+}
+
+##
+## If we disable the alarm handling, clear the alarm status
+##
+record(calcout, "$(S):$(TA):$(DN):DISABLE_ALARM_SETZERO") {
+  field(INPA, "$(S):$(TA):$(DN):DISABLE_ALARM CP")
+  field(CALC, "A==1?0:1")
+  field(DOPT, "Use CALC")
+  field(OOPT, "When Zero")
+  field(OUT, "$(S):$(TA):$(DN):ALARM_SUMMARY.VAL PP")
+}
+
+record(calc, "$(S):$(TA):$(DN):ALARM_SUMMARY_CALC") {
+  field(INPA, "$(S):$(TA):$(DN):Temperature1 CP MS")
+  field(INPB, "$(S):$(TA):$(DN):Temperature2 CP MS")
+  field(INPC, "$(S):$(TA):$(DN):Temperature3 CP MS")
+  field(INPD, "$(S):$(TA):$(DN):Temperature4 CP MS")
+  field(INPE, "$(S):$(TA):$(DN):Temperature5 CP MS")
+  field(INPF, "$(S):$(TA):$(DN):Temperature6 CP MS")
+  field(INPG, "$(S):$(TA):$(DN):Temperature7 CP MS")
+  field(INPH, "$(S):$(TA):$(DN):Temperature8 CP MS")
+  field(INPI, "$(S):$(TA):$(DN):Temperature9 CP MS")
+  field(INPJ, "$(S):$(TA):$(DN):Temperature10 CP MS")
+  field(CALC, "A")
+  field(FLNK, "$(S):$(TA):$(DN):ALARM_SUMMARY_CALC2")
+  field(SDIS, "$(S):$(TA):$(DN):DISABLE_ALARM")  
+}
+record(calc, "$(S):$(TA):$(DN):ALARM_SUMMARY_CALC2") {
+  field(INPA, "$(S):$(TA):$(DN):Temperature11 CP MS")
+  field(INPB, "$(S):$(TA):$(DN):Temperature12 CP MS")
+  field(INPC, "$(S):$(TA):$(DN):Temperature13 CP MS")
+  field(INPD, "$(S):$(TA):$(DN):Temperature14 CP MS")
+  field(INPE, "$(S):$(TA):$(DN):Temperature15 CP MS")
+  field(INPF, "$(S):$(TA):$(DN):AllStatus CP MS")
+  field(CALC, "A")
+  field(FLNK, "$(S):$(TA):$(DN):ALARM_SUMMARY_CALC3")
+  field(SDIS, "$(S):$(TA):$(DN):DISABLE_ALARM")  
+}
+record(calcout, "$(S):$(TA):$(DN):ALARM_SUMMARY_CALC3") {
+  field(INPA, "$(S):$(TA):$(DN):ALARM_SUMMARY_CALC.STAT")
+  field(INPB, "$(S):$(TA):$(DN):ALARM_SUMMARY_CALC2.STAT")
+  field(CALC, "(A!=0)||(B!=0)?1:0")
+  field(DOPT, "Use CALC")
+  field(OOPT, "Every Time")
+  field(OUT, "$(S):$(TA):$(DN):ALARM_SUMMARY PP")
+}
+
+##
+## Top level alarm summary record. 
+##
+record(bi, "$(S):$(TA):$(DN):ALARM_SUMMARY") {
+  field(ZNAM, "No Alarm")
+  field(ONAM, "Alarm")
+  field(OSV, "MAJOR")
+  field(PINI, "YES")
+  field(VAL, "0")
+  info(archive, "Monitor, 00:00:01, VAL")     
+}
+
+
+#*******************************************************************
+#END OF ALARM
+#*******************************************************************
+
+
+
+#check to see if the request doesnt trigger a read on the dilfridge because
+##it can heat up the system
+##I am using scan archiving because we need to figure out later what the tol
+##should be for recording for each of the sensors Fine tunning!!!
+#We dont scan faster than 1 seconds because the system has a multiplexor
+#that is slow to read values. 
+
+record(ai, "$(S):$(TA):$(DN):Temperature1") {
+  field(DESC, "Read Temp1")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadTemp1 Dilfridge1")
+  field(PINI, "YES")
+  field(SCAN, "1 second")
+  field(HIHI, "1000.0")
+  field(LOLO, "-1.0")
+  field(HHSV, "MAJOR")
+  field(LLSV, "MAJOR")
+  field(EGU, "K")
+  field(PREC, "4")
+  info(autosaveFields, "HIHI LOLO")
+  info(archive, "monitor,00:00:01")
+}
+
+
+record(ai, "$(S):$(TA):$(DN):Temperature2") {
+  field(DESC, "Read Temp2")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadTemp2 Dilfridge1")
+  field(PINI, "YES")
+  field(SCAN, "1 second")
+  field(HIHI, "1000.0")
+  field(LOLO, "-1.0")
+  field(HHSV, "MAJOR")
+  field(LLSV, "MAJOR")
+  field(EGU, "K")
+  field(PREC, "4")
+  info(autosaveFields, "HIHI LOLO")
+  info(archive, "monitor,00:00:01")
+
+}
+
+record(ai, "$(S):$(TA):$(DN):Temperature3") {
+  field(DESC, "Read Temp3")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadTemp3 Dilfridge1")
+  field(PINI, "YES")
+  field(SCAN, "1 second")
+  field(HIHI, "1000.0")
+  field(LOLO, "-1.0")
+  field(HHSV, "MAJOR")
+  field(LLSV, "MAJOR")
+  field(EGU, "K")
+  field(PREC, "4")
+  info(autosaveFields, "HIHI LOLO")
+  info(archive, "monitor,00:00:01")
+}
+
+
+record(ai, "$(S):$(TA):$(DN):Temperature4") {
+  field(DESC, "Read Temp4")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadTemp4 Dilfridge1")
+  field(PINI, "YES")
+  field(SCAN, "1 second")
+  field(HIHI, "1000.0")
+  field(LOLO, "-1.0")
+  field(HHSV, "MAJOR")
+  field(LLSV, "MAJOR")
+  field(EGU, "K")
+  field(PREC, "4")
+  info(autosaveFields, "HIHI LOLO")
+  info(archive, "monitor,00:00:01")
+}
+
+
+record(ai, "$(S):$(TA):$(DN):Temperature5") {
+  field(DESC, "Read Temp5")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadTemp5 Dilfridge1")
+  field(PINI, "YES")
+  field(SCAN, "1 second")
+  field(HIHI, "1000.0")
+  field(LOLO, "-1.0")
+  field(HHSV, "MAJOR")
+  field(LLSV, "MAJOR")
+  field(EGU, "K")
+  field(PREC, "4")
+  info(autosaveFields, "HIHI LOLO")
+  info(archive, "monitor,00:00:01")
+}
+
+
+record(ai, "$(S):$(TA):$(DN):Temperature6") {
+  field(DESC, "Read Temp6")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadTemp6 Dilfridge1")
+  field(PINI, "YES")
+  field(SCAN, "1 second")
+  field(HIHI, "1000.0")
+  field(LOLO, "-1.0")
+  field(HHSV, "MAJOR")
+  field(LLSV, "MAJOR")
+  field(EGU, "K")
+  field(PREC, "4")
+  info(autosaveFields, "HIHI LOLO")
+  info(archive, "monitor,00:00:01")
+}
+
+record(ai, "$(S):$(TA):$(DN):Temperature7") {
+  field(DESC, "Read Temp7")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadTemp7 Dilfridge1")
+  field(PINI, "YES")
+  field(SCAN, "1 second")
+  field(HIHI, "1000.0")
+  field(LOLO, "-1.0")
+  field(HHSV, "MAJOR")
+  field(LLSV, "MAJOR")
+  field(EGU, "K")
+  field(PREC, "4")
+  info(autosaveFields, "HIHI LOLO")
+  info(archive, "monitor,00:00:01")
+}
+
+
+record(ai, "$(S):$(TA):$(DN):Temperature8") {
+  field(DESC, "Read Temp8")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadTemp8 Dilfridge1")
+  field(PINI, "YES")
+  field(SCAN, "1 second")
+  field(HIHI, "1000.0")
+  field(LOLO, "-1.0")
+  field(HHSV, "MAJOR")
+  field(LLSV, "MAJOR")
+  field(EGU, "K")
+  field(PREC, "4")
+  info(autosaveFields, "HIHI LOLO")
+  info(archive, "monitor,00:00:01")
+}
+
+
+record(ai, "$(S):$(TA):$(DN):Temperature9") {
+  field(DESC, "Read Temp9")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadTemp9 Dilfridge1")
+  field(PINI, "YES")
+  field(SCAN, "1 second")
+  field(HIHI, "1000.0")
+  field(LOLO, "-1.0")
+  field(HHSV, "MAJOR")
+  field(LLSV, "MAJOR")
+  field(EGU, "K")
+  field(PREC, "4")
+  info(autosaveFields, "HIHI LOLO")
+  info(archive, "monitor,00:00:01")
+}
+
+
+record(ai, "$(S):$(TA):$(DN):Temperature10") {
+  field(DESC, "Read Temp10")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadTemp10 Dilfridge1")
+  field(PINI, "YES")
+  field(SCAN, "1 second")
+  field(HIHI, "1000.0")
+  field(LOLO, "-1.0")
+  field(HHSV, "MAJOR")
+  field(LLSV, "MAJOR")
+  field(EGU, "K")
+  field(PREC, "4")
+  info(autosaveFields, "HIHI LOLO")
+  info(archive, "monitor,00:00:01")
+}
+
+record(ai, "$(S):$(TA):$(DN):Temperature11") {
+  field(DESC, "Read Temp11")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadTemp11 Dilfridge1")
+  field(PINI, "YES")
+  field(SCAN, "1 second")
+  field(HIHI, "1000.0")
+  field(LOLO, "-1.0")
+  field(HHSV, "MAJOR")
+  field(LLSV, "MAJOR")
+  field(EGU, "K")
+  field(PREC, "4")
+  info(autosaveFields, "HIHI LOLO")
+  info(archive, "monitor,00:00:01")
+}
+
+
+record(ai, "$(S):$(TA):$(DN):Temperature12") {
+  field(DESC, "Read Temp12")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadTemp12 Dilfridge1")
+  field(PINI, "YES")
+  field(SCAN, "1 second")
+  field(HIHI, "1000.0")
+  field(LOLO, "-1.0")
+  field(HHSV, "MAJOR")
+  field(LLSV, "MAJOR")
+  field(EGU, "K")
+  field(PREC, "4")
+  info(autosaveFields, "HIHI LOLO")
+  info(archive, "monitor,00:00:01")
+}
+
+
+record(ai, "$(S):$(TA):$(DN):Temperature13") {
+  field(DESC, "Read Temp13")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadTemp13 Dilfridge1")
+  field(PINI, "YES")
+  field(SCAN, "1 second")
+  field(HIHI, "1000.0")
+  field(LOLO, "-1.0")
+  field(HHSV, "MAJOR")
+  field(LLSV, "MAJOR")
+  field(EGU, "K")
+  field(PREC, "4")
+  info(autosaveFields, "HIHI LOLO")
+  info(archive, "monitor,00:00:01")
+}
+
+
+record(ai, "$(S):$(TA):$(DN):Temperature14") {
+  field(DESC, "Read Temp14")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadTemp14 Dilfridge1")
+  field(PINI, "YES")
+  field(SCAN, "1 second")
+  field(HIHI, "1000.0")
+  field(LOLO, "-1.0")
+  field(HHSV, "MAJOR")
+  field(LLSV, "MAJOR")
+  field(EGU, "K")
+  field(PREC, "4")
+  info(autosaveFields, "HIHI LOLO")
+  info(archive, "monitor,00:00:01")
+}
+
+
+record(ai, "$(S):$(TA):$(DN):Temperature15") {
+  field(DESC, "Read Temp15")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadTemp15 Dilfridge1")
+  field(PINI, "YES")
+  field(SCAN, "1 second")
+  field(HIHI, "1000.0")
+  field(LOLO, "-1.0")
+  field(HHSV, "MAJOR")
+  field(LLSV, "MAJOR")
+  field(EGU, "K")
+  field(PREC, "4")
+  info(autosaveFields, "HIHI LOLO")
+  info(archive, "monitor,00:00:01")
+}
+
+
+record(ao, "$(S):$(TA):$(DN):WriteTemp") {
+  info(autosaveFields, "VAL")
+  field(DESC, "Write Temperature SP")
+  field(DTYP, "stream")
+  field(OUT, "@dilFridge.proto SetTempSP($(SPSensor)) Dilfridge1")
+  field(SCAN, "Passive")
+  field(PINI, "NO")
+  field(EGU, "K")
+  field(DRVH, "1")
+  field(DRVL, "0")
+  field(HOPR, "1")
+  field(LOPR, "0")
+  field(PREC, "3")
+  field(HIHI, "1")
+  field(LOLO, "0")
+  info(archive, "monitor,00:00:01")
+
+}
+
+record(ao, "$(S):$(TA):$(DN):SetRampRate") {
+  info(autosaveFields, "VAL")
+  field(DESC, "Write Ramp Rate")
+  field(DTYP, "stream")
+  field(OUT, "@dilFridge.proto SetRampRate($(SPSensor)) Dilfridge1")
+  field(SCAN, "Passive")
+  field(PINI, "NO")
+  field(EGU, "K/min")
+  field(DRVH, "10")
+  field(DRVL, "0")
+  field(HOPR, "10")
+  field(LOPR, "0")
+  field(PREC, "3")
+  field(HIHI, "10")
+  field(LOLO, "0")
+  info(archive, "monitor,00:00:01")
+
+}
+
+
+record(ai, "$(S):$(TA):$(DN):ReadRampRate") {
+  field(DESC, "Read Ramp Rate")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadRampRate($(SPSensor)) Dilfridge1")
+  field(SCAN, "1 second")
+  field(EGU, "K/min")
+  field(PREC, "3")
+  info(archive, "monitor,00:00:01")
+
+}
+
+
+
+record(ai, "$(S):$(TA):$(DN):ReadTempSP") {
+  field(DESC, "Read Temperature SP")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadTempSP($(SPSensor)) Dilfridge1")
+  field(SCAN, "1 second")
+  field(EGU, "K")
+  field(PREC, "4")
+  info(archive, "monitor,00:00:01")
+
+}
+
+
+
+
+record(mbbo, "$(S):$(TA):$(DN):WriteTempRange") {
+  field(DESC, "Write Temperature")
+  info(autosaveFields, "VAL")
+  info(archive, "Monitor, 00:00:01, VAL")
+  field(ZRVL,"0")
+  field(ZRST,"0mA")
+  field(ONVL, "1000")
+  field(ONST, "0.1000mA")
+  field(TWVL, "3160")
+  field(TWST, "0.316mA")
+  field(THVL, "10000")
+  field(THST, "1.000mA")
+  field(FRVL, "31600")
+  field(FRST, "3.160mA")
+  field(FVVL, "100000")
+  field(FVST, "10.000mA")
+  field(SXVL, "316000")
+  field(SXST, "31.600mA")
+  field(SVVL, "1000000")
+  field(SVST, "100.000mA")
+  field(FLNK, "$(S):$(TA):$(DN):WriteTempRangeCalc")
+}
+
+
+
+record(calcout, "$(S):$(TA):$(DN):WriteTempRangeCalc")
+{
+  field(INPA, "$(S):$(TA):$(DN):WriteTempRange.RVAL")
+  field(CALC, "A/10000")
+  field(DOPT, "Use CALC")
+  field(OUT, "@dilFridge.proto SetRange($(SPSensor)) Dilfridge1")
+  field(DTYP, "stream")
+  info(archive, "monitor,00:00:01")
+
+}
+
+
+
+
+record(ai, "$(S):$(TA):$(DN):ReadTempRange") {
+  field(DESC, "Read Range")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadRange($(SPSensor)) Dilfridge1")
+  field(SCAN, "1 second")
+  field(EGU, "mA")
+  field(PREC, "4")
+  info(archive, "monitor,00:00:01")
+
+}
+
+
+
+record(bo, "$(S):$(TA):$(DN):SetCloseLoop") {
+  field(DESC, "Set Close Loop Mode")
+  field(DTYP, "stream")
+  field(OUT, "@dilFridge.proto SetMode($(SPSensor)) Dilfridge1")
+  info(archive, "monitor,00:00:01")
+  info(autosaveFields, "VAL")
+  field(ONAM, "ON")
+  field(ZNAM, "OFF")
+}
+
+record(bi, "$(S):$(TA):$(DN):ReadCloseLoop") {
+  field(DESC, "Read Close Loop Mode")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadMode($(SPSensor)) Dilfridge1")
+  info(archive, "monitor,00:00:01")
+  info(autosaveFields, "VAL")
+  field(ONAM, "ON")
+  field(ZNAM, "OFF")
+  field(SCAN, "1 second")
+}
+
+
+record(bo, "$(S):$(TA):$(DN):SetRampRateEnable") {
+  field(DESC, "Set Ramp Rate Enable")
+  field(DTYP, "stream")
+  field(OUT, "@dilFridge.proto SetRampRateEnable($(SPSensor)) Dilfridge1")
+  info(archive, "monitor,00:00:01")
+  info(autosaveFields, "VAL")
+  field(ONAM, "ON")
+  field(ZNAM, "OFF")
+}
+
+record(bi, "$(S):$(TA):$(DN):ReadRampRateEnable") {
+  field(DESC, "Read Ramp Rate Enable")
+  field(DTYP, "stream")
+  field(INP, "@dilFridge.proto ReadRampRateEnable($(SPSensor)) Dilfridge1")
+  info(archive, "monitor,00:00:01")
+  info(autosaveFields, "VAL")
+  field(ONAM, "ON")
+  field(ZNAM, "OFF")
+  field(SCAN, "1 second")
+}
+
+
+
+
+

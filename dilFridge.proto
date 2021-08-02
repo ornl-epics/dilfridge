@@ -1,0 +1,159 @@
+Terminator = LF;
+LockTimeout = 55555000;
+ReplyTimeout = 5000;
+ReadTimeout = 4000;
+WriteTimeout = 1000;
+ExtraInput = Ignore;
+
+#Returns the status of the dilution refrigerator system
+ReadStatus {
+ out "READ:SYS:DR:STATUS"; in "STAT:SYS:DR:STATUS:%{_HIFPP|OK|_HICPP|_HICDP|_NAIR}"
+}
+
+#Read temperature1
+ReadTemp1 {
+ out "READ:DEV:T1:TEMP:SIG:TEMP"; in "STAT:DEV:T1:TEMP:SIG:TEMP:%f"
+}
+
+
+#Read temperature2
+ReadTemp2 {
+ out "READ:DEV:T2:TEMP:SIG"; in "STAT:DEV:T2:TEMP:SIG:TEMP:%f"
+}
+
+
+#Read temperature3
+ReadTemp3 {
+ out "READ:DEV:T3:TEMP:SIG"; in "STAT:DEV:T3:TEMP:SIG:TEMP:%f"
+}
+
+
+#Read temperature4
+ReadTemp4 {
+ out "READ:DEV:T4:TEMP:SIG"; in "STAT:DEV:T4:TEMP:SIG:TEMP:%f"
+}
+
+
+#Read temperature5
+ReadTemp5 {
+ out "READ:DEV:T5:TEMP:SIG"; in "STAT:DEV:T5:TEMP:SIG:TEMP:%f"
+}
+
+
+#Read temperature6
+ReadTemp6 {
+ out "READ:DEV:T6:TEMP:SIG"; in "STAT:DEV:T6:TEMP:SIG:TEMP:%f"
+}
+
+
+#Read temperature7
+ReadTemp7 {
+ out "READ:DEV:T7:TEMP:SIG"; in "STAT:DEV:T7:TEMP:SIG:TEMP:%f"
+}
+
+
+#Read temperature8
+ReadTemp8 {
+ out "READ:DEV:T8:TEMP:SIG"; in "STAT:DEV:T8:TEMP:SIG:TEMP:%f"
+}
+
+
+#Read temperature9
+ReadTemp9 {
+ out "READ:DEV:T9:TEMP:SIG"; in "STAT:DEV:T9:TEMP:SIG:TEMP:%f"
+}
+
+
+#Read temperature10
+ReadTemp10 {
+ out "READ:DEV:T10:TEMP:SIG"; in "STAT:DEV:T10:TEMP:SIG:TEMP:%f"
+}
+
+#Read temperature11
+ReadTemp11 {
+ out "READ:DEV:T11:TEMP:SIG"; in "STAT:DEV:T11:TEMP:SIG:TEMP:%f"
+}
+
+
+#Read temperature12
+ReadTemp12 {
+ out "READ:DEV:T12:TEMP:SIG"; in "STAT:DEV:T12:TEMP:SIG:TEMP:%f"
+}
+
+
+#Read temperature13
+ReadTemp13 {
+ out "READ:DEV:T13:TEMP:SIG"; in "STAT:DEV:T13:TEMP:SIG:TEMP:%f"
+}
+
+#Read temperature14
+ReadTemp14 {
+ out "READ:DEV:T14:TEMP:SIG"; in "STAT:DEV:T14:TEMP:SIG:TEMP:%f"
+}
+
+
+#Read temperature15
+ReadTemp15 {
+ out "READ:DEV:T15:TEMP:SIG"; in "STAT:DEV:T15:TEMP:SIG:TEMP:%f"
+}
+
+
+
+#set temperature
+SetTempSP{
+ out "SET:DEV:T\$1:TEMP:LOOP:TSET:%.3f"; in "STAT:SET:DEV:T\$1:TEMP:LOOP:TSET:%f:VALID"
+}
+
+#Read temperature SP
+ReadTempSP{
+ out "READ:DEV:T\$1:TEMP:LOOP:TSET"; in "STAT:DEV:T\$1:TEMP:LOOP:TSET:%f"
+}
+
+#set ramp
+SetRampRate{
+ out "SET:DEV:T\$1:TEMP:LOOP:RAMP:RATE:%.3f"; in "STAT:SET:DEV:T\$1:TEMP:LOOP:RAMP:RATE:%f:VALID"
+}
+
+#read ramp rate
+ReadRampRate{
+ out "READ:DEV:T\$1:TEMP:LOOP:RAMP:RATE"; in "STAT:DEV:T\$1:TEMP:LOOP:RAMP:RATE:%f"
+}
+
+#set ramp Enable
+SetRampRateEnable{
+ out "SET:DEV:T\$1:TEMP:LOOP:RAMP:ENAB:%{OFF|ON}"; in "STAT:SET:DEV:T\$1:TEMP:LOOP:RAMP:ENAB:%{OFF|ON}:VALID"
+}
+
+#read ramp rate enable
+ReadRampRateEnable{
+ out "READ:DEV:T\$1:TEMP:LOOP:RAMP:ENAB"; in "STAT:DEV:T\$1:TEMP:LOOP:RAMP:ENAB:%{OFF|ON}"
+}
+
+
+
+#set range
+SetRange{
+ out "SET:DEV:T\$1:TEMP:LOOP:RANGE:%.3f"; in "STAT:SET:DEV:T\$1:TEMP:LOOP:RANGE:%f:VALID"
+}
+
+
+#read range
+ReadRange{
+ out "READ:DEV:T\$1:TEMP:LOOP:RANGE"; in "STAT:DEV:T\$1:TEMP:LOOP:RANGE:%f"
+}
+
+#Set Close loop mode
+SetMode{
+ out "SET:DEV:T\$1:TEMP:LOOP:MODE:%{OFF|ON}"; in "STAT:SET:DEV:T\$1:TEMP:LOOP:MODE:%{OFF|ON}:VALID"
+}
+
+
+#Read Close loop mode
+ReadMode{
+ out "READ:DEV:T\$1:TEMP:LOOP:MODE"; in "STAT:DEV:T\$1:TEMP:LOOP:MODE:%{OFF|ON}"
+}
+
+
+
+
+
